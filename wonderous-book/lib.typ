@@ -7,9 +7,6 @@
   // The book's author.
   author: "Author",
 
-  // The paper size to use.
-  paper-size: "iso-b5",
-
   // A dedication to display on the third page.
   dedication: none,
 
@@ -42,15 +39,22 @@
   // Set the document's metadata.
   set document(title: title, author: author)
 
-  // Set the body font. TeX Gyre Pagella is a free alternative
-  // to Palatino.
-  set text(font: "TeX Gyre Pagella")
 
-  // Configure the page properties.
-  set page(
-    paper: paper-size,
-    margin: (bottom: 1.75cm, top: 2.25cm),
-  )
+  // Alternatives are:
+  // - "Georgia"
+  // - "Crimson Text", download the .ttf files from Adobe
+  // - "EB Garamond 08" ou "EB Garamond 12", install with apt install fonts-ebgaramond
+  // - "TeX Gyre Pagella", used by wonderous-book by default, install with apt install tex-gyre
+  //
+  // https://www.reddit.com/r/selfpublish/comments/1d3nr1g/what_fonts_do_you_use_in_your_printed_books/?rdt=36609
+  // https://images.squarespace-cdn.com/content/v1/626468793ed4b669a65c7631/3f326379-d750-45f4-bf3d-afb90fef24d0/Font+chart.jpg
+  //
+  // Other: Adobe Caslon, Minion Pro, Adobe Garamond, Sabon
+  // Original comment: Set the body font. TeX Gyre Pagella is a free alternative
+  // to Palatino.
+  set text(font: "EB Garamond 08")
+
+  set page(width: 5.2in, height: 8in)
 
   // The first page.
   page(align(center + horizon)[
@@ -79,8 +83,8 @@
   set par(spacing: 0.78em, leading: 0.78em, first-line-indent: 12pt, justify: true)
 
   // Start with a chapter outline.
-  outline(title: [Chapters])
-  pagebreak(to: "odd", weak: true)
+  // outline(title: [Chapters])
+  // pagebreak(to: "odd", weak: true)
 
   // Configure page properties.
   set page(
