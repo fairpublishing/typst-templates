@@ -1,31 +1,39 @@
-// This function gets your whole document as its `body` and formats
-// it as a simple fiction book.
 #let book(
-  // The book's title.
+  // The book's title
   title: [Book title],
 
-  // The book's author.
+  // The book's author
   author: "Author",
 
-  // A dedication to display on the third page.
-  dedication: none,
+  // The book's translator (new parameter)
+  translator: none,
 
-  // Details about the book's publisher that are
-  // display on the second page.
+  // The book's cover image (new parameter)
+  cover-image: none,
+
+  // Copyright information (new parameter)
+  copyright-info: none,
+
+  // ISBN number (new parameter)
+  isbn: none,
+
+  // Publishing info
   publishing-info: none,
 
-  // The book's content.
+  // A dedication to display
+  dedication: none,
+
+  // The book's content
   body,
 ) = {
-  // Creates a pagebreak to the given parity where empty pages
-  // can be detected via `is-page-empty`.
+  // Keep the existing pagebreak detection function
   let detectable-pagebreak(to: "odd") = {
     [#metadata(none) <empty-page-start>]
     pagebreak(to: to)
     [#metadata(none) <empty-page-end>]
   }
 
-  // Workaround for https://github.com/typst/typst/issues/2722
+  // Keep the existing is-page-empty function
   let is-page-empty() = {
     let page-num = here().page()
     query(<empty-page-start>)
@@ -36,75 +44,74 @@
       })
   }
 
-  // Set the document's metadata.
+  // Set the document's metadata
   set document(title: title, author: author)
-
-
-  // Alternatives are:
-  // - "Georgia"
-  // - "Crimson Text", download the .ttf files from Adobe
-  // - "EB Garamond 08" ou "EB Garamond 12", install with apt install fonts-ebgaramond
-  // - "TeX Gyre Pagella", used by wonderous-book by default, install with apt install tex-gyre
-  //
-  // https://www.reddit.com/r/selfpublish/comments/1d3nr1g/what_fonts_do_you_use_in_your_printed_books/?rdt=36609
-  // https://images.squarespace-cdn.com/content/v1/626468793ed4b669a65c7631/3f326379-d750-45f4-bf3d-afb90fef24d0/Font+chart.jpg
-  //
-  // Other: Adobe Caslon, Minion Pro, Adobe Garamond, Sabon
-  // Original comment: Set the body font. TeX Gyre Pagella is a free alternative
-  // to Palatino.
   set text(font: "EB Garamond 08")
-
   set page(width: 5.2in, height: 8in)
 
-  // The first page.
+  // Cover image page
+  if cover-image != none {
+    page(margin: 0pt,
+      align(center + horizon)[
+        #image(cover-image, width: 100%)
+      ]
+    )
+    pagebreak(to: "odd")
+  }
+
+  // Title-only page
+  page(align(center + horizon)[
+    #text(2.5em)[*#title*]
+  ])
+  pagebreak(to: "odd")
+
+  // Full title page with author and translator
   page(align(center + horizon)[
     #text(2em)[*#title*]
     #v(2em, weak: true)
     #text(1.6em, author)
+    #if translator != none {
+      v(1em, weak: true)
+      text(1.2em)[#translator]
+    }
   ])
+  pagebreak(to: "even")
 
-  // Display publisher info at the bottom of the second page.
-  if publishing-info != none {
-    align(center + bottom, text(0.8em, publishing-info))
+  // Copyright and publishing information page
+  {
+    set text(size: 0.8em)
+    grid(
+      columns: (1fr),
+      gutter: 1em,
+      if copyright-info != none [ #copyright-info ],
+      if publishing-info != none [ #publishing-info ],
+      if isbn != none [ ISBN: #isbn ],
+    )
   }
+  pagebreak(to: "odd")
 
-  pagebreak()
-
-  // Display the dedication at the top of the third page.
+  // Dedication page (if provided)
   if dedication != none {
     v(15%)
     align(center, strong(dedication))
+    pagebreak(to: "odd")
   }
 
-  // Books like their empty pages.
-  pagebreak(to: "odd")
-
-  // Configure paragraph properties.
+  // Configure paragraph properties
   set par(spacing: 0.78em, leading: 0.78em, first-line-indent: 12pt, justify: true)
 
-  // Start with a chapter outline.
-  // outline(title: [Chapters])
-  // pagebreak(to: "odd", weak: true)
-
-  // Configure page properties.
+  // Configure page properties (keep existing header configuration)
   set page(
-    // The header always contains the book title on odd pages and
-    // the author on even pages, unless
-    // - we are on an empty page
-    // - we are on a page that starts a chapter
     header: context {
-      // Is this an empty page inserted to keep page parity?
       if is-page-empty() {
         return
       }
 
-      // Are we on a page that starts a chapter?
       let i = here().page()
       if query(heading).any(it => it.location().page() == i) {
         return
       }
 
-      // Find the heading of the section we are currently in.
       let before = query(selector(heading).before(here()))
       if before != () {
         set text(0.95em)
@@ -115,8 +122,6 @@
           columns: (1fr, 10fr, 1fr),
           align: (left, center, right),
           if calc.even(i) [#i],
-          // Swap `author` and `title` around, or possibly with `heading`
-          // to change what is displayed on each side.
           if calc.even(i) { author } else { title },
           if calc.odd(i) [#i],
         )
@@ -124,17 +129,13 @@
     },
   )
 
-  // Configure chapter headings.
+  // Keep existing heading configuration
   show heading.where(level: 1): it => {
-    // Always start on odd pages.
     detectable-pagebreak(to: "odd")
-
-    // Create the heading numbering.
     let number = if it.numbering != none {
       counter(heading).display(it.numbering)
       h(7pt, weak: true)
     }
-
     v(5%)
     text(2em, weight: 700, block([#number #it.body]))
     v(1.25em)
